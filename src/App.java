@@ -1,94 +1,109 @@
-import java.io.IOException;
+import java.io.*;
+import java.net.*;
+import java.util.Scanner;
+import java.util.ArrayList;
 
 
-public class App {
-   public static void main(String[] args) throws IOException {
 
 
-       // URL for "Romeo and Juliet" from Project Gutenberg
-       String bookUrl1 = "https://www.gutenberg.org/cache/epub/11/pg11.txt";
-       // URL for "Alice's Adventures in Wonderland" from Project Gutenberg
-       String bookUrl2 = "https://www.gutenberg.org/cache/epub/37106/pg37106.txt";
+public class Book {
+   private String title;
+   private ArrayList<String> text = new ArrayList<>();
 
 
-       // Read and translate "Romeo and Juliet"
-       Book input1 = new Book();
-       input1.readFromUrl("Romeo and Juliet", bookUrl1);
 
 
-       // Count the number of words in the original book
-       int originalWordCount1 = countWords(input1);
-       System.out.println("Book: Romeo and Juliet");
-       System.out.println("Original word count: " + originalWordCount1);
-
-
-       // Translate the book into Pig Latin
-       Book translatedBook1 = PigLatinTranslator.translate(input1);
-
-
-       // Count the number of words in the translated book
-       int translatedWordCount1 = countWords(translatedBook1);
-       System.out.println("Translated word count: " + translatedWordCount1);
-
-
-       // Save the translated book to a text file
-       String fileName1 = "translated_romeo_and_juliet.txt";
-       saveToFile(translatedBook1, fileName1);
-       System.out.println("Translated book saved to: " + fileName1);
-
-
-      
-       Book input2 = new Book();
-       input2.readFromUrl("Little Women; Or, Meg, Jo, Beth, and Amy", bookUrl2);
-
-
-       // Count the number of words in the original book
-       int originalWordCount2 = countWords(input2);
-       System.out.println("Book: Little Women; Or, Meg, Jo, Beth, and Amy");
-       System.out.println("Original word count: " + originalWordCount2);
-
-
-       // Translate the book into Pig Latin
-       Book translatedBook2 = PigLatinTranslator.translate(input2);
-
-
-       // Count the number of words in the translated book
-       int translatedWordCount2 = countWords(translatedBook2);
-       System.out.println("Translated word count: " + translatedWordCount2);
-
-
-       // Save the translated book to a text file
-
-
-       String fileName2 = "translated_Little_Women.txt";       saveToFile(translatedBook2, fileName2);
-       System.out.println("Translated book saved to: " + fileName2);
-
-
-       // Run the test suite to verify the translation logic
-       System.out.println("\nRunning Test Suite...");
-       TestSuite.run();  // This will print out whether the tests pass or fail.
+   Book() {
    }
 
 
-   // Method to count words in a book
-   private static int countWords(Book book) {
-       int wordCount = 0;
-       for (int i = 0; i < book.getLineCount(); i++) {
-           String line = book.getLine(i);
-           wordCount += line.split("\\s+").length;  // Split by whitespace to count words
+
+
+   public String getTitle() {
+       return title;
+   }
+
+
+
+
+   void setTitle(String title) {
+       this.title = title;
+   }
+
+
+
+
+   String getLine(int lineNumber) {
+       return text.get(lineNumber);
+   }
+
+
+
+
+   int getLineCount() {
+       return text.size();
+   }
+
+
+
+
+   void appendLine(String line) {
+       text.add(line);
+   }
+
+
+
+
+   public void readFromString(String title, String string) {
+       this.title = title;
+       Scanner scanner = new Scanner(string);
+       while (scanner.hasNext()) {
+           String line = scanner.nextLine();
+           text.add(line);
        }
-       return wordCount;
+       scanner.close();
    }
 
 
-   // Method to save a book to a text file
-   private static void saveToFile(Book book, String fileName) throws IOException {
-       try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter(fileName))) {
-           writer.write(book.getTitle() + "\n\n");  // Write the title at the top of the file
-           for (int i = 0; i < book.getLineCount(); i++) {
-               writer.write(book.getLine(i) + "\n");
+
+
+   public void readFromUrl(String title, String url) {
+       this.title = title;
+       try {
+           URL bookUrl = new URL(url);
+           Scanner scanner = new Scanner(bookUrl.openStream());
+           while (scanner.hasNext()) {
+               text.add(scanner.nextLine());
            }
-           System.out.println("Book saved to: " + fileName);
+           scanner.close();
+       } catch (IOException ex) {
+           ex.printStackTrace();
+       }
+   }
+
+
+
+
+   public void printlines(int start, int length) {
+       System.out.println("Lines " + start + " to " + (start + length) + " of book: " + title);
+       for (int i = start; i < start + length; i++) {
+           if (i < text.size()) {
+               System.out.println(i + ": " + text.get(i));
+           } else {
+               System.out.println(i + ": line not in book.");
+           }
+       }
+   }
+
+
+
+
+   public void writeToFile(String fileName) throws IOException {
+       try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+           writer.write(this.title + "\n\n");
+           for (String line : text) {
+               writer.write(line + "\n");
+           }
        }
    }
 }
